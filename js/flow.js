@@ -82,67 +82,93 @@ svg.append('linearGradient')
     .attr("stop-color", function(d) { return d.color; });
 
 // wrangle the data
-function data_wrangle(dataset, fy){
-    var newdata = dataset.filter(function(v){
-        return v.budget_year == fy
-    })
-    rev_order = [
-      // keep variations of the same label on a single line
-      "Property Tax",
-      "Business License Tax",
-      "Sales Tax",
-      "Utility Consumption Tax",
-      "Real Estate Transfer Tax",
-      "Fines & Penalties",
-      "Parking Tax",
-      "Transient Occupancy Tax",
-      "Service Charges",
-      "Transfers from Fund Balance",
-      "Miscellaneous Revenue",
-      "Interest Income",
-      "Licenses & Permits",
-      "Interfund Transfers",
-      "Grants & Subsidies",
-      "Local (Parcel) Taxes", "Local Tax",
-      "Internal Service Funds",
-      "Gas Tax",
-    ];
-    rev = newdata.filter(function(v,i,a){
-        return v.account_type == "Revenue";
-    });
-    revcats = d3.nest()
-        .key(function(d){
-            return d.account_category;
-        })
-        .sortKeys(function(a,b){
-            return rev_order.indexOf(a) - rev_order.indexOf(b);
-        })
-        .key(function(d){
-            if (d.fund_code == "1010") {
-                return "General Fund";
-            } else {
-                return "Non-discretionary funds";
-            }
-        })
-        .rollup(function(v){
-            var values = v;
-            values.total = d3.sum(values, function(d){
-                return +d.amount;
-            });
-            return values;
-        })
-        .entries(rev);
-    nodes = [{"name": "General Fund", "type": "fund", "order": 0}, {"name": "Non-discretionary funds", "type": "fund", "order": 1}];
-    nodeoffset = nodes.length;
-    links = [];
-    for (var i = 0; i < revcats.length; i++){
+function data_wrangle(dataset, budgetYear) {
+    var newdata = dataset.filter(function (v) {
+            return v.budget_year == budgetYear
+        }),
+        rev_order = [
+            // keep variations of the same label on a single line
+            "Property Tax",
+            "Business License Tax",
+            "Sales Tax",
+            "Utility Consumption Tax",
+            "Real Estate Transfer Tax",
+            "Fines & Penalties",
+            "Parking Tax",
+            "Transient Occupancy Tax",
+            "Service Charges",
+            "Transfers from Fund Balance",
+            "Miscellaneous Revenue",
+            "Interest Income",
+            "Licenses & Permits",
+            "Interfund Transfers",
+            "Grants & Subsidies",
+            "Local (Parcel) Taxes", "Local Tax",
+            "Internal Service Funds",
+            "Gas Tax",
+        ],
+        exp_order = [
+            // keep variations of the same label on a single line
+            "Police Department", "Police",
+            "Fire Department", "Fire",
+            "City Council",
+            "Administrative Services",
+            "Oakland Parks & Recreation",
+            "Human Services",
+            "City Auditor",
+            "Community Services",
+            "Information Technology",
+            "Finance",
+            "City Clerk",
+            "Capital Improvement Projects",
+            "Mayor",
+            "Economic & Workforce Development",
+            "City Administrator",
+            "Human Resources Management",
+            "Planning & Building",
+            "City Attorney",
+            "Housing & Community Development",
+            "Library", "Oakland Public Library",
+            "Public Works", "Oakland Public Works",
+            "Debt Service & Misc."
+        ],
+        rev = newdata.filter(function (v,i,a) { return v.account_type == "Revenue"; }),
+        exp = newdata.filter(function (v,i,a) { return v.account_type == "Expense"; }),
+        revcats = d3.nest()
+                    .key(     function (d)   { return d.account_category; })
+                    .sortKeys(function (a,b) { return rev_order.indexOf(a) - rev_order.indexOf(b); })
+                    .key(     function (d)   { return d.fund_code == "1010" ? "General Fund" : "Non-discretionary funds"; })
+                    .rollup(  function (v)   {
+                        var values = v;
+                        values.total = d3.sum(values, function(d) { return +d.amount; });
+                        return values;
+                    })
+                    .entries(rev),
+        expdivs = d3.nest()
+                    .key(     function (d)   { return d.department == 'Non-Departmental' ? "Debt Service & Misc." : d.department; })
+                    .sortKeys(function (a,b) { return exp_order.indexOf(a) - exp_order.indexOf(b); })
+                    .key(     function (d)   { return d.fund_code == "1010" ? "General Fund" : "Non-discretionary funds"; })
+                    .rollup(  function (v)   {
+                        var values = v;
+                        values.total = d3.sum(values, function (d) { return d.amount; });
+                        return values;
+                    })
+                    .entries(exp),
+        nodes = [{"name": "General Fund", "type": "fund", "order": 0}, {"name": "Non-discretionary funds", "type": "fund", "order": 1}],
+        nodeoffset = nodes.length,
+        links = [],
+        link  = {},
+        i = 0,
+        x = 0;
+
+    for (i = 0; i < revcats.length; i++) {
         nodes.push({"name": revcats[i].key, "type": "revenue"});
-        for (var x = 0; x < revcats[i].values.length; x++) {
-            var link = {
+        for (x = 0; x < revcats[i].values.length; x++) {
+            link = {
                 "source": i + nodeoffset,
                 "value": revcats[i].values[x].values.total,
             };
-            if (revcats[i].values[x].key == "General Fund"){
+            if (revcats[i].values[x].key == "General Fund") {
                 link.target = 0;
             } else if (revcats[i].values[x].key == "Non-discretionary funds") {
                 link.target = 1;
@@ -151,67 +177,14 @@ function data_wrangle(dataset, fy){
         }
 
     }
-    exp = newdata.filter(function(v,i,a){
-        return v.account_type == "Expense";
-    });
-    exp_order = [
-        // keep variations of the same label on a single line
-        "Police Department", "Police",
-        "Fire Department", "Fire",
-        "City Council",
-        "Administrative Services",
-        "Oakland Parks & Recreation",
-        "Human Services",
-        "City Auditor",
-        "Community Services",
-        "Information Technology",
-        "Finance",
-        "City Clerk",
-        "Capital Improvement Projects",
-        "Mayor",
-        "Economic & Workforce Development",
-        "City Administrator",
-        "Human Resources Management",
-        "Planning & Building",
-        "City Attorney",
-        "Housing & Community Development",
-        "Library", "Oakland Public Library",
-        "Public Works", "Oakland Public Works",
-        "Debt Service & Misc."
-    ];
-    expdivs = d3.nest()
-        .key(function(d){
-            if (d.department == "Non-Departmental") {
-                return "Debt Service & Misc."
-            }
-            return d.department;
-        })
-        .sortKeys(function(a,b){
-            return exp_order.indexOf(a) - exp_order.indexOf(b);
-        })
-        .key(function(d){
-            if (d.fund_code == "1010") {
-                return "General Fund";
-            } else {
-                return "Non-discretionary funds";
-            }
-        })
-        .rollup(function(v){
-            var values = v;
-            values.total = d3.sum(values, function(d){
-                return d.amount;
-            });
-            return values;
-        })
-        .entries(exp);
-    for (var i = 0; i < expdivs.length; i++){
+    for (i = 0; i < expdivs.length; i++){
         nodes.push({"name": expdivs[i].key, "type": "expense"});
-        for (var x = 0; x < expdivs[i].values.length; x++) {
-            var link = {
+        for (x = 0; x < expdivs[i].values.length; x++) {
+            link = {
                 "target": i + nodeoffset + revcats.length,
                 "value": expdivs[i].values[x].values.total,
             };
-            if (expdivs[i].values[x].key == "General Fund"){
+            if (expdivs[i].values[x].key == "General Fund") {
                 link.source = 0;
             } else if (expdivs[i].values[x].key == "Non-discretionary funds") {
                 link.source = 1;
