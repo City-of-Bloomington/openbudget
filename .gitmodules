@@ -1,0 +1,6 @@
+[submodule "js/vendor/d3"]
+	path = js/vendor/d3
+	url = https://github.com/mbostock/d3.git
+[submodule "js/vendor/d3-plugins"]
+	path = js/vendor/d3-plugins
+	url = https://github.com/d3/d3-plugins.git
