@@ -2,9 +2,6 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width">
-    <link rel="stylesheet" href="css/main.css">
-    <title>Adopted Budget 2013-15 (Sankey) - Open Budget: Oakland</title>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.4.5/d3.min.js"></script>
 </head>
 <body class="undefined">
     <p><em>
@@ -19,53 +16,12 @@
     </div>
     <div id="hover_description"></div>
 
-    <div id="wrapper">
-        <div class="container">
-            <div class="row">
-                <div class="intro col-md-8">
-                </div>
-            </div>
-            <div class="row">
-            </div>
-        </div>
-        <script src="js/sankey.js" charset="utf-8"></script>
-        <script src="js/flow.js" charset="utf-8"></script>
-        <script type="text/javascript">
-            var datafiles = ["2015__2016.csv"],
-                years     = [];
-            datafiles.forEach(function (datafile) {
-                years = years.concat(datafile.slice(0,-4).split("__"));
-            })
-            years.reverse();
-            d3.select("#fy.form-control").selectAll('option')
-              .data(years)
-              .enter()
-              .append('option')
-              .attr('value', function (d) { return d; })
-              .property('selected', function (d,i) { return i == 0; })
-              .text(function (d) { return d; });
-
-            d3.select("#fy.form-control")
-              .on('change', drawFlow);
-
-            // run once to initially populate the chart
-            drawFlow();
-
-            function drawFlow() {
-                years.reverse();
-                var fy = d3.select("#fy.form-control").node().value,
-                    fy_i = years.indexOf(fy),
-                    file_i = Math.floor(fy_i / 2),
-                    filename = datafiles[file_i];
-                years.reverse();
-
-                d3.csv("data/" + filename, function (error, data) {
-                    var final_data = data_wrangle(data, fy);
-                    do_with_budget(final_data);
-                });
-            }
-        </script>
-        <div id="wrapper-footer"></div>
-    </div>
+    <script src="js/vendor/d3/d3.min.js"></script>
+    <script src="js/sankey.js" charset="utf-8"></script>
+    <script src="js/flow.js" charset="utf-8"></script>
+    <script src="js/cob.js" charset="utf-8"></script>
+    <style tye="text/css">
+        @import url('css/main.css');
+    </style>
 </body>
 </html>
