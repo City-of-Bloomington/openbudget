@@ -1,4 +1,4 @@
-var datafiles = ['2015__2016.csv', '2016-summary__2016-detail.csv'],
+var datafiles = ['2015-Detail__2015-Summary.csv', '2016-Detail__2016-Summary.csv'],
     years     = [];
 
 datafiles.forEach(function (datafile) {
@@ -30,7 +30,7 @@ function drawFlow() {
 
     years.reverse();
 
-    d3.csv("data/" + filename, function (error, data) {
+    d3.csv("/static/budget/data/" + filename, function (error, data) {
         var final_data = data_wrangle(data, fy);
         do_with_budget(final_data);
     });

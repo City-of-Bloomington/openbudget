@@ -24,12 +24,12 @@ svg.append("text")
 // define color scales
 var fundColors = d3.scale.ordinal()
     .domain(["General Fund", "Other Appropriated Funds"])
-    .range(["#276419", "#4db029"]);
-    // .range(["#276419", "#b8e186"]);
+    .range(["#ffd11a", "#e60000"]); //Ricks primary pick
+    //.range(["#276419", "#4db029"]); Oakland colors
 var erColors = d3.scale.ordinal()
     .domain(["expense", "revenue"])
-    .range(["#ffd92f", "#ffd92f"])
-    // .range(["#c51b7d", "#8e0152"]);
+    .range(["#0065cc", "#3398ff"]);
+    //.range(["#ffd92f", "#ffd92f"]); Oakland colors
 
 // create color gradients for links
 svg.append('linearGradient')
